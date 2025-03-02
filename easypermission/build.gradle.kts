@@ -1,6 +1,9 @@
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.maven.publish)
+
 }
 
 android {
@@ -42,3 +45,32 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.sdp.android)
 }
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"]) // Corrected reference to the release component
+
+                groupId = "com.github.arshadiqbal268"  // Corrected assignment using double quotes
+                artifactId = "easypermission"
+                version = "1.0"
+            }
+        }
+    }
+}
+
+/*
+afterEvaluate{
+    publishing{
+        publications{
+            release(MavenPublication){
+                from component.release
+
+                        groupId ='com.github.arshadiqbal268'
+                artifactId = 'easypermission'
+                version = '1.0'
+            }
+        }
+    }
+}*/
