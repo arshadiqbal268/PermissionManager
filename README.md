@@ -29,3 +29,26 @@ settings.gradle at the end of repositories:
                     
                 }
             )
+
+<br><br><br>
+
+  # Android Permission Manager Usage Guide
+
+A simple table explaining key parameters of an Android Permission Manager. <br><b>Mandatory parameters are marked with (✅), while optional parameters can be omitted</b>
+
+| Parameter            | Description       |
+|----------------------|------------------|
+| ✅ Permission  |  Which Permission        |
+| ✅ PermissionName  |  Name of Permission that would be shown on Dialog  |
+| ✅ onPermissionResult  |  A callback function that gets invoked when the permission request completes.<br> If the permission is granted, it receives true<br> If the permission is denied, it receives false	 |
+| ✅ showExplanationDialog  |  if true, it shows an explanation dialog before requesting permissions        |
+| ✅ onRationalPermissionResultCallback  |  A callback function in case of Rational that gets invoked when the permission request completes.<br> If the permission is granted, it receives true<br> If the permission is denied, it receives false	 |
+| dialogPermissionExplanationTitle  |  String? (Optional)  <br>A custom title for the explanation dialog before requesting permission  <br> If provided, this title will be shown on Dialog<br>  If not provided, a default title will be used      |
+| dialogPermissionExplanationDescription  |  String? (Optional)  <br>A custom Description for the explanation dialog before requesting permission  <br> If provided, this Description will be shown on Dialog<br>  If not provided, a default description will be used      |
+| dialogTitleRational  |  String? (Optional)  <br>A custom title for the Rational dialog  <br> If provided, this title will be shown on Dialog<br>  If not provided, a default title will be used      |
+| dialogDescriptionRational  |  String? (Optional)  <br>A custom Description for the Rational dialog <br> If provided, this Description will be shown on Dialog<br>  If not provided, a default description will be used  |
+| onDeniedButtonOfExplanationDialog  |  (Optional) <br> This is an optional callback that gets triggered when the cancel button is pressed of the explanation dialog. |
+
+
+
+
