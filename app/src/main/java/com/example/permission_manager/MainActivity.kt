@@ -18,8 +18,15 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-         permissionManager = PermissionManager(this@MainActivity)
-
+        permissionManager = PermissionManager(this@MainActivity)
+        /*permissionManager?.changeDialogUIColor(
+            "#ffffff",
+            "#000000",
+            "#000000",
+            "#003FFB",
+            "#ffffff",
+            "#999999"
+        )*/
         findViewById<TextView>(R.id.requestPermission).setOnClickListener {
             permissionManager?.requestPermission(READ_MEDIA_IMAGES, "Image",
                 { isPermissionAllowed ->

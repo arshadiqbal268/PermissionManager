@@ -8,6 +8,7 @@ import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -23,6 +24,7 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -37,6 +39,12 @@ class PermissionManager constructor(
     private var permissionExplanationSetting =
         "permission is essential, but you’ve denied it multiple times. Please enable it from settings by click allow button."
 
+    var dialogBgColor =                 "#ffffff"
+    var dialogTitleTextColor =          "#000000"
+    var dialogDescriptionTextColor =    "#000000"
+    var dialogButtonBgColor =           "#003FFB"
+    var dialogButtonTextColor =         "#ffffff"
+    var dialogCancelButtonColor =       "#999999"
 
     fun isPermissionsGranted(permissionName: String): Boolean {
         return (activity.checkSelfPermission(permissionName) == PackageManager.PERMISSION_GRANTED)
@@ -261,6 +269,22 @@ class PermissionManager constructor(
         }
     }
 
+    fun changeDialogUIColor(
+        dialogBgColor: String,
+        dialogTitleTextColor: String,
+        dialogDescriptionTextColor: String,
+        dialogButtonBgColor: String,
+        dialogButtonTextColor: String,
+        dialogCancelButtonColor: String,
+    ) {
+        this.dialogBgColor = dialogBgColor
+        this.dialogTitleTextColor = dialogTitleTextColor
+        this.dialogDescriptionTextColor = dialogDescriptionTextColor
+        this.dialogButtonBgColor = dialogButtonBgColor
+        this.dialogButtonTextColor = dialogButtonTextColor
+        this.dialogCancelButtonColor = dialogCancelButtonColor
+    }
+
     fun showPermissionExplanationDialog(
         title: String,
         description: String,
@@ -271,14 +295,24 @@ class PermissionManager constructor(
         val dialogView = LayoutInflater.from(activity).inflate(R.layout.permission_dialog, null)
         val btnAllow: Button = dialogView.findViewById(R.id.btnAllow)
 
+        val bgLayout: ConstraintLayout = dialogView.findViewById(R.id.bgLayout)
         val tvTitleDialog: TextView = dialogView.findViewById(R.id.tvTitleDialog)
         val tvDesDialog: TextView = dialogView.findViewById(R.id.tvDesDialog)
 
         tvTitleDialog.text = title
         tvDesDialog.text = description
-
         val btnClose: ImageView = dialogView.findViewById(R.id.btnClose)
         val builder = AlertDialog.Builder(activity)
+
+        bgLayout.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogBgColor))
+        tvTitleDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogTitleTextColor)))
+        tvDesDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogDescriptionTextColor)))
+        btnAllow.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogButtonBgColor))
+        btnAllow.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogButtonTextColor)))
+        btnClose.imageTintList =ColorStateList.valueOf(Color.parseColor(dialogCancelButtonColor))
+
+
+
         builder.setView(dialogView)
 
         val alertDialog = builder.create()
@@ -331,6 +365,16 @@ class PermissionManager constructor(
         tvDesDialog.text = description
 
         val btnClose: ImageView = dialogView.findViewById(R.id.btnClose)
+        val bgLayout: ConstraintLayout = dialogView.findViewById(R.id.bgLayout)
+
+        bgLayout.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogBgColor))
+        tvTitleDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogTitleTextColor)))
+        tvDesDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogDescriptionTextColor)))
+        btnAllow.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogButtonBgColor))
+        btnAllow.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogButtonTextColor)))
+        btnClose.imageTintList =ColorStateList.valueOf(Color.parseColor(dialogCancelButtonColor))
+
+
         val builder = AlertDialog.Builder(activity)
         builder.setView(dialogView)
 
