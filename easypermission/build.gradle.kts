@@ -54,7 +54,7 @@ afterEvaluate {
 
                 groupId = "com.github.arshadiqbal268"  // Corrected assignment using double quotes
                 artifactId = "easypermission"
-                version = "1.0.1"
+                version = "1.0.2"
             }
         }
     }
