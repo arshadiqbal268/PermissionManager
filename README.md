@@ -11,7 +11,7 @@ settings.gradle at the end of repositories:
 <b>Step 2</b>. Add the dependency
 
    	dependencies {
-	    implementation 'com.github.arshadiqbal268:PermissionManager:1.0'
+	    implementation 'com.github.arshadiqbal268:PermissionManager:$latest-version'
    	}
 
 <br>
