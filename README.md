@@ -5,7 +5,6 @@ settings.gradle at the end of repositories:
     
     repositories 
     {
-	  mavenCentral()
 	  maven { url 'https://jitpack.io' }
     }
 
