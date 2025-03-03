@@ -95,8 +95,7 @@ class PermissionManager constructor(
         onRationalPermissionResultCallback: (Boolean) -> Unit,
 
         dialogPermissionExplanationTitle: String = permissionExplanationTitle,
-        dialogPermissionExplanationDescription: String = "$permissionName $permissionExplanation"
-        ,
+        dialogPermissionExplanationDescription: String = "$permissionName $permissionExplanation",
 
         dialogTitleRational: String = permissionExplanationTitle,
         dialogDescriptionRational: String = "$permissionName $permissionExplanationSetting",
@@ -104,6 +103,35 @@ class PermissionManager constructor(
         onDeniedButtonOfExplanationDialog: (() -> Unit)? = null,
 
         ) {
+
+        var mPermission = ""
+        if (permission == READ_MEDIA_IMAGES || permission == READ_MEDIA_VIDEO || permission == READ_MEDIA_AUDIO) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                mPermission = permission
+            } else {
+                mPermission = WRITE_EXTERNAL_STORAGE
+            }
+
+        } else {
+            mPermission = permission
+        }
+
+
+        LogE("requested permission is:$mPermission")
+
+        if (permission == READ_MEDIA_IMAGES || permission == READ_MEDIA_VIDEO || permission == READ_MEDIA_AUDIO) {
+            if (isReadMediaPermissionGranted(mPermission)) {
+                onPermissionResult.invoke(true)
+                return
+            }
+        } else {
+            if (isPermissionsGranted(mPermission)) {
+                onPermissionResult.invoke(true)
+                return
+            }
+        }
+
 
         if (showExplanationDialog) {
 

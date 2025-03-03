@@ -11,17 +11,20 @@ import com.example.easypermission.LogE
 import com.example.easypermission.PermissionManager
 
 class MainActivity : AppCompatActivity() {
+
+    var permissionManager: PermissionManager? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val permissionManager = PermissionManager(this@MainActivity)
+         permissionManager = PermissionManager(this@MainActivity)
 
         findViewById<TextView>(R.id.requestPermission).setOnClickListener {
-            permissionManager.requestPermission(READ_MEDIA_IMAGES, "Image",
+            permissionManager?.requestPermission(READ_MEDIA_IMAGES, "Image",
                 { isPermissionAllowed ->
                     LogE("is permission granted:$isPermissionAllowed")
+
                 }, true,
                 { isPermissionAllowed ->
                     // in rational permission case
@@ -31,4 +34,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+
 }
