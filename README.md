@@ -14,3 +14,18 @@ settings.gradle at the end of repositories:
 	    implementation 'com.github.arshadiqbal268:PermissionManager:1.0'
    	}
 
+<br>
+
+
+
+	   val permissionManager = PermissionManager(this@MainActivity)
+    
+       permissionManager.requestPermission(READ_MEDIA_IMAGES, "Image",
+                { isPermissionAllowed ->
+                    
+                }, true,
+                { isPermissionAllowed ->
+                    // rational permission case
+                    
+                }
+            )
