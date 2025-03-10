@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -54,7 +53,7 @@ afterEvaluate {
 
                 groupId = "com.github.arshadiqbal268"  // Corrected assignment using double quotes
                 artifactId = "easypermission"
-                version = "1.0.2"
+                version = "1.0.3"
             }
         }
     }

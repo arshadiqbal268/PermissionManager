@@ -1,5 +1,6 @@
 package com.example.easypermission
 
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_AUDIO
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
@@ -24,27 +25,37 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
 class PermissionManager constructor(
-    private val activity: ComponentActivity
+    private val activity: AppCompatActivity,
+    private val mInterface: AllFileResultInterface? = null
 ) {
+    //  (private val mInterface: AllFileResultInterface? = null)
+    // for specifically all file permission, this could be called in case if all file process end functionality needs to be handled
 
 
+    var allFileResultInterface: AllFileResultInterface? = mInterface
     private var permissionExplanationTitle = "Access Required"
     private var permissionExplanation =
-        "permission is essential, Please enable it from settings by click allow button."
+        "permission is essential to show the Media, Please enable it by clicking allow button."
     private var permissionExplanationSetting =
-        "permission is essential, but you’ve denied it multiple times. Please enable it from settings by click allow button."
+        "permission is essential, but you’ve denied it multiple times. Please enable it from settings by clicking allow button."
 
-    var dialogBgColor =                 "#ffffff"
-    var dialogTitleTextColor =          "#000000"
-    var dialogDescriptionTextColor =    "#000000"
-    var dialogButtonBgColor =           "#003FFB"
-    var dialogButtonTextColor =         "#ffffff"
-    var dialogCancelButtonColor =       "#999999"
+    private var permissionExplanationManageAllFile =
+        "Manage All file permission is essential to Show the Documents, Please enable it by clicking allow button."
+
+    private var dialogBgColor = "#ffffff"
+    private var dialogTitleTextColor = "#000000"
+    private var dialogDescriptionTextColor = "#000000"
+    private var dialogButtonBgColor = "#003FFB"
+    private var dialogButtonTextColor = "#ffffff"
+    private var dialogCancelButtonColor = "#999999"
+
+    private var permissionViewModel: PermissionViewModel? = null
 
     fun isPermissionsGranted(permissionName: String): Boolean {
         return (activity.checkSelfPermission(permissionName) == PackageManager.PERMISSION_GRANTED)
@@ -66,11 +77,11 @@ class PermissionManager constructor(
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
         } else {
-            true
+            false
         }
     }
 
-    fun openPermissionSettings(
+    private fun openPermissionSettings(
         onRationalPermissionCallBack: () -> Unit,
     ) {
 
@@ -94,7 +105,7 @@ class PermissionManager constructor(
      * @param showExplanationDialog dialog before asking the permission to explain to the USER
      * @author Arshad Iqbal
      */
-    fun requestPermission(
+    fun checkPermissionAndRequestIfNeeded(
 
         permission: String,
         permissionName: String,
@@ -129,11 +140,23 @@ class PermissionManager constructor(
         LogE("requested permission is:$mPermission")
 
         if (permission == READ_MEDIA_IMAGES || permission == READ_MEDIA_VIDEO || permission == READ_MEDIA_AUDIO) {
+            if (isAllFilesPermissionAllowed()) {
+                onPermissionResult.invoke(true)
+                return
+            }
+
             if (isReadMediaPermissionGranted(mPermission)) {
                 onPermissionResult.invoke(true)
                 return
             }
         } else {
+            if (permission == WRITE_EXTERNAL_STORAGE || permission == READ_EXTERNAL_STORAGE) {
+                if (isAllFilesPermissionAllowed()) {
+                    onPermissionResult.invoke(true)
+                    return
+                }
+            }
+
             if (isPermissionsGranted(mPermission)) {
                 onPermissionResult.invoke(true)
                 return
@@ -150,36 +173,11 @@ class PermissionManager constructor(
                     //ask permission and proceed
                     LogE("ask permission, dialog positive button clicked")
 
-                    startRequestingPermission(
-                        permission
-                    ) { isGranted, isPermissionRational ->
-
-                        if (!isPermissionRational && !isReadMediaPermissionGranted(permission)) {
-                            LogE("isPermissionRational:$isPermissionRational")
-                            showRationalPermissionDialog(dialogTitleRational,
-                                dialogDescriptionRational,
-                                {
-                                    LogE("go to setting")
-
-                                    openPermissionSettings({
-
-                                        if (isReadMediaPermissionGranted(permission)) {
-                                            LogE("$permission is granted")
-                                            onRationalPermissionResultCallback.invoke(true)
-                                        } else {
-                                            LogE("$permission is not granted")
-                                            onRationalPermissionResultCallback.invoke(false)
-                                        }
-                                    })
-                                },
-                                {
-                                    LogE("Cancel rational")
-                                })
-                        } else {
-                            LogE("Normal flow of permissions")
-                            onPermissionResult.invoke(isGranted)
-                        }
-                    }
+                    startRequestingPermissionFlow(
+                        permission, dialogTitleRational,
+                        dialogDescriptionRational, onPermissionResult,
+                        onRationalPermissionResultCallback, onDeniedButtonOfExplanationDialog
+                    )
                 },
                 {
                     //don't ask permission negative button clicked
@@ -191,42 +189,58 @@ class PermissionManager constructor(
 
             LogE("ask permission, dialog positive button clicked")
 
-            startRequestingPermission(
-                permission
-            ) { isGranted, isPermissionRational ->
-
-                if (!isPermissionRational && !isReadMediaPermissionGranted(permission)) {
-                    LogE("isPermissionRational:$isPermissionRational")
-                    showRationalPermissionDialog(dialogTitleRational,
-                        dialogDescriptionRational,
-                        {
-                            LogE("go to setting")
-
-                            openPermissionSettings({
-
-                                if (isReadMediaPermissionGranted(permission)) {
-                                    LogE("$permission is granted")
-                                    onRationalPermissionResultCallback.invoke(true)
-                                } else {
-                                    LogE("$permission is not granted")
-                                    onRationalPermissionResultCallback.invoke(false)
-                                }
-                            })
-                        },
-                        {
-                            LogE("Cancel rational")
-                        })
-                } else {
-                    LogE("Normal flow of permissions")
-                    onPermissionResult.invoke(isGranted)
-                }
-            }
+            startRequestingPermissionFlow(
+                permission, dialogTitleRational,
+                dialogDescriptionRational, onPermissionResult,
+                onRationalPermissionResultCallback, onDeniedButtonOfExplanationDialog
+            )
 
         }
 
     }
 
-    fun startRequestingPermission(
+    private fun startRequestingPermissionFlow(
+        permission: String,
+        dialogTitleRational: String,
+        dialogDescriptionRational: String,
+        onPermissionResult: (Boolean) -> Unit,
+        onRationalPermissionResultCallback: (Boolean) -> Unit,
+        onDeniedButtonOfExplanationDialog: (() -> Unit)?
+    ) {
+        startRequestingPermission(
+            permission
+        ) { isGranted, isPermissionRational ->
+
+            if (!isPermissionRational && !isReadMediaPermissionGranted(permission)) {
+                LogE("isPermissionRational:$isPermissionRational")
+                showRationalPermissionDialog(dialogTitleRational,
+                    dialogDescriptionRational,
+                    {
+                        LogE("go to setting")
+
+                        openPermissionSettings({
+
+                            if (isReadMediaPermissionGranted(permission)) {
+                                LogE("$permission is granted")
+                                onRationalPermissionResultCallback.invoke(true)
+                            } else {
+                                LogE("$permission is not granted")
+                                onRationalPermissionResultCallback.invoke(false)
+                            }
+                        })
+                    },
+                    {
+                        LogE("Cancel rational")
+                        onDeniedButtonOfExplanationDialog?.invoke()
+                    })
+            } else {
+                LogE("Normal flow of permissions")
+                onPermissionResult.invoke(isGranted)
+            }
+        }
+    }
+
+    private fun startRequestingPermission(
         permission: String,
         onPermissionResult: (Boolean, Boolean) -> Unit
     ) {
@@ -259,13 +273,119 @@ class PermissionManager constructor(
 
     }
 
-    fun requestManageAllFilePermission(requestCode: Int) {
+    fun checkManageAllFilePermissionAndRequestIfNeeded(
+        onPermissionResult: (Boolean) -> Unit,
+        showExplanationDialog: Boolean,
+        dialogPermissionExplanationTitle: String = permissionExplanationTitle,
+        dialogPermissionExplanationDescription: String = "$permissionExplanationManageAllFile",
+
+        onDeniedButtonOfExplanationDialog: (() -> Unit)? = null,
+
+        ) {
+
+        //in case of android 11 or above starting all file access permission code
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+
+            if (isAllFilesPermissionAllowed()) {
+                onPermissionResult.invoke(true)
+                return
+            }
+
+            if (showExplanationDialog) {
+
+                showPermissionExplanationDialog(
+                    dialogPermissionExplanationTitle,
+                    dialogPermissionExplanationDescription,
+                    positiveBtnClick = {
+                        //ask permission and proceed
+                        LogE("ask permission, dialog positive button clicked")
+
+                        startRequestingAllFilePermissionFlow(onPermissionResult)
+
+                    },
+                    negativeBtnClick = {
+                        //don't ask permission negative button clicked
+                        LogE("permission dialog negative button clicked")
+                        onDeniedButtonOfExplanationDialog?.invoke()
+                    })
+
+
+            } else {
+                LogE("else permission asking without explanation dialog")
+                startRequestingAllFilePermissionFlow(onPermissionResult)
+            }
+
+        } else {
+
+            //in case of less than android 11, starting storage permission code
+            if (showExplanationDialog) {
+
+            }
+
+            checkPermissionAndRequestIfNeeded(WRITE_EXTERNAL_STORAGE, "Storage",
+                { isPermissionAllowed ->
+                    LogE("is permission granted:$isPermissionAllowed")
+                    if (isPermissionAllowed) {
+                        onPermissionResult.invoke(true)
+                    } else {
+                        LogE("permission not granted:$isPermissionAllowed")
+                        onPermissionResult.invoke(false)
+                    }
+
+                }, true,
+                { isPermissionAllowed ->
+                    // in rational permission case
+                    LogE("is permission granted:$isPermissionAllowed")
+                    if (isPermissionAllowed) {
+                        onPermissionResult.invoke(true)
+                    } else {
+                        LogE("permission not granted:$isPermissionAllowed")
+                        onPermissionResult.invoke(false)
+                    }
+                },
+                onDeniedButtonOfExplanationDialog = {
+                    onDeniedButtonOfExplanationDialog?.invoke()
+                }
+
+            )
+
+        }
+
+
+    }
+
+    private fun startRequestingAllFilePermissionFlow(onPermissionResult: (Boolean) -> Unit) {
+        requestManageAllFilePermission(
+
+            {
+                LogE("Manage all file permission callBack")
+                if (isAllFilesPermissionAllowed()) {
+                    LogE("Manage all file permission is granted")
+                    onPermissionResult.invoke(true)
+                } else {
+                    onPermissionResult.invoke(false)
+                }
+            })
+    }
+
+    private fun requestManageAllFilePermission(onPermissionResultCallBack: (Boolean) -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+
             if (!Environment.isExternalStorageManager()) {
                 val uri = Uri.parse("package:${activity.packageName}")
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
-                activity.startActivityForResult(intent, requestCode)
+//                activity.startActivityForResult(intent, requestCode)
+                manageAllFilePermissionCallback =
+                    onPermissionResultCallBack
+                manageAllFilePermissionLauncher.launch(intent)
+
+            } else {
+                LogE("permission already granted")
+                manageAllFilePermissionCallback?.invoke(true)
             }
+
+        } else {
+            LogE("Don't need all file permission instead asking storage permission")
         }
     }
 
@@ -285,7 +405,7 @@ class PermissionManager constructor(
         this.dialogCancelButtonColor = dialogCancelButtonColor
     }
 
-    fun showPermissionExplanationDialog(
+    private fun showPermissionExplanationDialog(
         title: String,
         description: String,
         positiveBtnClick: () -> Unit,
@@ -304,12 +424,12 @@ class PermissionManager constructor(
         val btnClose: ImageView = dialogView.findViewById(R.id.btnClose)
         val builder = AlertDialog.Builder(activity)
 
-        bgLayout.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogBgColor))
+        bgLayout.backgroundTintList = ColorStateList.valueOf(Color.parseColor(dialogBgColor))
         tvTitleDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogTitleTextColor)))
         tvDesDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogDescriptionTextColor)))
-        btnAllow.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogButtonBgColor))
+        btnAllow.backgroundTintList = ColorStateList.valueOf(Color.parseColor(dialogButtonBgColor))
         btnAllow.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogButtonTextColor)))
-        btnClose.imageTintList =ColorStateList.valueOf(Color.parseColor(dialogCancelButtonColor))
+        btnClose.imageTintList = ColorStateList.valueOf(Color.parseColor(dialogCancelButtonColor))
 
 
 
@@ -348,7 +468,7 @@ class PermissionManager constructor(
     }
 
 
-    fun showRationalPermissionDialog(
+    private fun showRationalPermissionDialog(
         title: String,
         description: String,
         positiveBtnClick: () -> Unit,
@@ -367,12 +487,12 @@ class PermissionManager constructor(
         val btnClose: ImageView = dialogView.findViewById(R.id.btnClose)
         val bgLayout: ConstraintLayout = dialogView.findViewById(R.id.bgLayout)
 
-        bgLayout.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogBgColor))
+        bgLayout.backgroundTintList = ColorStateList.valueOf(Color.parseColor(dialogBgColor))
         tvTitleDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogTitleTextColor)))
         tvDesDialog.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogDescriptionTextColor)))
-        btnAllow.backgroundTintList =ColorStateList.valueOf(Color.parseColor(dialogButtonBgColor))
+        btnAllow.backgroundTintList = ColorStateList.valueOf(Color.parseColor(dialogButtonBgColor))
         btnAllow.setTextColor(ColorStateList.valueOf(Color.parseColor(dialogButtonTextColor)))
-        btnClose.imageTintList =ColorStateList.valueOf(Color.parseColor(dialogCancelButtonColor))
+        btnClose.imageTintList = ColorStateList.valueOf(Color.parseColor(dialogCancelButtonColor))
 
 
         val builder = AlertDialog.Builder(activity)
@@ -411,7 +531,7 @@ class PermissionManager constructor(
     }
 
 
-    fun requestPermissions(
+    private fun requestPermissions(
         permissions: Array<String>,
         callback: (Boolean, Boolean) -> Unit
     ) {
@@ -419,7 +539,7 @@ class PermissionManager constructor(
         permissionLauncher.launch(permissions) // Launch the permission request
     }
 
-    var permissionCallback: ((Boolean, Boolean) -> Unit)? = null
+    private var permissionCallback: ((Boolean, Boolean) -> Unit)? = null
     private val permissionLauncher =
         activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val isGranted = permissions.all { it.value } // Check if all permissions are granted
@@ -438,7 +558,7 @@ class PermissionManager constructor(
         }
 
 
-    var permissionRationalCallback: (() -> Unit)? = null
+    private var permissionRationalCallback: (() -> Unit)? = null
     private val permissionRationalLauncher =
         activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
@@ -455,4 +575,17 @@ class PermissionManager constructor(
             }
             permissionRationalCallback?.invoke()
         }
+
+
+    private var manageAllFilePermissionCallback: ((Boolean) -> Unit)? = null
+    private val manageAllFilePermissionLauncher =
+        activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+            LogE("result.resultCode: ${result.resultCode}")
+            LogE("result.resultCode2 ${manageAllFilePermissionCallback}")
+            manageAllFilePermissionCallback?.invoke(true)
+            allFileResultInterface?.onPermissionDenied()
+        }
+
 }
+
