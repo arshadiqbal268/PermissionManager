@@ -171,7 +171,7 @@ class PermissionManager constructor(
                 dialogPermissionExplanationDescription,
                 {
                     //ask permission and proceed
-                    LogE("ask permission, dialog positive button clicked")
+                    LogE("ask permission, dialog positive button clicked for permission:$permission")
 
                     startRequestingPermissionFlow(
                         permission, dialogTitleRational,
@@ -211,7 +211,11 @@ class PermissionManager constructor(
             permission
         ) { isGranted, isPermissionRational ->
 
-            if (!isPermissionRational && !isReadMediaPermissionGranted(permission)) {
+//            if (permission == WRITE_EXTERNAL_STORAGE || permission == READ_EXTERNAL_STORAGE) {
+//
+//            }
+
+            if (!isPermissionRational && !isPermissionsGranted(permission)) {
                 LogE("isPermissionRational:$isPermissionRational")
                 showRationalPermissionDialog(dialogTitleRational,
                     dialogDescriptionRational,
@@ -219,8 +223,7 @@ class PermissionManager constructor(
                         LogE("go to setting")
 
                         openPermissionSettings({
-
-                            if (isReadMediaPermissionGranted(permission)) {
+                            if (isPermissionsGranted(permission)) {
                                 LogE("$permission is granted")
                                 onRationalPermissionResultCallback.invoke(true)
                             } else {

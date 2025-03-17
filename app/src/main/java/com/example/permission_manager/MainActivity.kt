@@ -25,14 +25,14 @@ class MainActivity : AppCompatActivity() {
 
         LogE("onCreate")
 
-        permissionManager = PermissionManager(this@MainActivity)
+//        permissionManager = PermissionManager(this@MainActivity)
         //for specifically all file permission, this could be called in case if all file process end functionality needs to be handled
-        /*permissionManager = PermissionManager(this@MainActivity, object : AllFileResultInterface {
+        permissionManager = PermissionManager(this@MainActivity, object : AllFileResultInterface {
             override fun onPermissionDenied() {
                 LogE("onPermissionDenied kkjkjk")
                 findViewById<TextView>(R.id.requestPermission).visibility= View.GONE
             }
-        })*/
+        })
 //        permissionManager?.initViewMode(permissionViewModel)
         /*permissionManager?.changeDialogUIColor(
             "#ffffff",
@@ -74,8 +74,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
-//    private val permissionViewModel by viewModels<PermissionViewModel>()
 
     override fun onResume() {
         super.onResume()
