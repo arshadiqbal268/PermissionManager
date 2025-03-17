@@ -57,8 +57,13 @@ class PermissionManager constructor(
 
     private var permissionViewModel: PermissionViewModel? = null
 
-    fun isPermissionsGranted(permissionName: String): Boolean {
-        return (activity.checkSelfPermission(permissionName) == PackageManager.PERMISSION_GRANTED)
+    fun isPermissionsGranted(permission: String): Boolean {
+
+        if (permission == READ_MEDIA_IMAGES || permission == READ_MEDIA_VIDEO || permission == READ_MEDIA_AUDIO) {
+            return isReadMediaPermissionGranted(permission)
+        } else {
+            return (activity.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
+        }
     }
 
     fun isReadMediaPermissionGranted(permissionName: String): Boolean {
@@ -211,10 +216,6 @@ class PermissionManager constructor(
             permission
         ) { isGranted, isPermissionRational ->
 
-//            if (permission == WRITE_EXTERNAL_STORAGE || permission == READ_EXTERNAL_STORAGE) {
-//
-//            }
-
             if (!isPermissionRational && !isPermissionsGranted(permission)) {
                 LogE("isPermissionRational:$isPermissionRational")
                 showRationalPermissionDialog(dialogTitleRational,
@@ -223,6 +224,7 @@ class PermissionManager constructor(
                         LogE("go to setting")
 
                         openPermissionSettings({
+
                             if (isPermissionsGranted(permission)) {
                                 LogE("$permission is granted")
                                 onRationalPermissionResultCallback.invoke(true)
@@ -230,6 +232,7 @@ class PermissionManager constructor(
                                 LogE("$permission is not granted")
                                 onRationalPermissionResultCallback.invoke(false)
                             }
+
                         })
                     },
                     {

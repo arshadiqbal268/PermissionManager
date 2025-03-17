@@ -1,5 +1,6 @@
 package com.example.permission_manager
 
+import android.Manifest.permission.READ_CONTACTS
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.content.res.Configuration
 import android.os.Bundle
@@ -43,8 +44,9 @@ class MainActivity : AppCompatActivity() {
             "#999999"
         )*/
 
-        /*findViewById<TextView>(R.id.requestPermission).setOnClickListener {
-            permissionManager?.checkPermissionAndRequestIfNeeded(READ_MEDIA_IMAGES, "Image",
+        findViewById<TextView>(R.id.requestPermission).setOnClickListener {
+            permissionManager?.checkPermissionAndRequestIfNeeded(
+                READ_CONTACTS, "Image",
                 { isPermissionAllowed ->
                     LogE("is permission granted:$isPermissionAllowed")
 
@@ -54,10 +56,10 @@ class MainActivity : AppCompatActivity() {
                     LogE("is permission granted:$isPermissionAllowed")
                 }
             )
-        }*/
+        }
 
 
-        findViewById<TextView>(R.id.requestPermission).setOnClickListener {
+       /* findViewById<TextView>(R.id.requestPermission).setOnClickListener {
             permissionManager?.checkManageAllFilePermissionAndRequestIfNeeded(
                 onPermissionResult = { isPermissionAllowed ->
                     if (isPermissionAllowed) {
@@ -71,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                     LogE("onDeniedButtonOfExplanationDialog")
                 }
             )
-        }
+        }*/
 
     }
 
