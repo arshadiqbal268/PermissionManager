@@ -2,6 +2,7 @@ package com.example.permission_manager
 
 import android.Manifest.permission.READ_CONTACTS
 import android.Manifest.permission.READ_MEDIA_IMAGES
+import android.Manifest.permission.READ_MEDIA_VIDEO
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View

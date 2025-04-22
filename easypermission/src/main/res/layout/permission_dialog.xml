@@ -56,7 +56,7 @@
             android:gravity="center"
             android:text=""
             android:textColor="@android:color/black"
-            android:textSize="@dimen/_10sdp"
+            android:textSize="@dimen/_12sdp"
             app:layout_constraintEnd_toEndOf="@+id/tvTitleDialog"
             app:layout_constraintStart_toStartOf="@+id/tvTitleDialog"
             app:layout_constraintTop_toBottomOf="@+id/tvTitleDialog" />
