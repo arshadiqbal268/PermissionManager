@@ -1,11 +1,11 @@
 package com.example.easypermission
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_AUDIO
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -22,7 +22,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -108,6 +107,7 @@ class PermissionManager constructor(
      * @param permissionName name of permission to inject in description on the dialog
      * @param onPermissionResult result of particular permission whether it has been denied or granted already
      * @param showExplanationDialog dialog before asking the permission to explain to the USER
+     * @param showSettingDialog setting dialog in case if permission denied twice and setting dialog show true/false
      * @author Arshad Iqbal
      */
     fun checkPermissionAndRequestIfNeeded(
@@ -125,8 +125,9 @@ class PermissionManager constructor(
         dialogDescriptionRational: String = "$permissionName $permissionExplanationSetting",
 
         onDeniedButtonOfExplanationDialog: (() -> Unit)? = null,
+        showSettingDialog: Boolean = true
 
-        ) {
+    ) {
 
         var mPermission = ""
         if (permission == READ_MEDIA_IMAGES || permission == READ_MEDIA_VIDEO || permission == READ_MEDIA_AUDIO) {
@@ -162,6 +163,13 @@ class PermissionManager constructor(
                 }
             }
 
+            if (permission == POST_NOTIFICATIONS) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    onPermissionResult.invoke(true)
+                    return
+                }
+            }
+
             if (isPermissionsGranted(mPermission)) {
                 onPermissionResult.invoke(true)
                 return
@@ -181,7 +189,8 @@ class PermissionManager constructor(
                     startRequestingPermissionFlow(
                         permission, dialogTitleRational,
                         dialogDescriptionRational, onPermissionResult,
-                        onRationalPermissionResultCallback, onDeniedButtonOfExplanationDialog
+                        onRationalPermissionResultCallback, onDeniedButtonOfExplanationDialog,
+                        showSettingDialog
                     )
                 },
                 {
@@ -197,7 +206,8 @@ class PermissionManager constructor(
             startRequestingPermissionFlow(
                 permission, dialogTitleRational,
                 dialogDescriptionRational, onPermissionResult,
-                onRationalPermissionResultCallback, onDeniedButtonOfExplanationDialog
+                onRationalPermissionResultCallback, onDeniedButtonOfExplanationDialog,
+                showSettingDialog
             )
 
         }
@@ -210,7 +220,8 @@ class PermissionManager constructor(
         dialogDescriptionRational: String,
         onPermissionResult: (Boolean) -> Unit,
         onRationalPermissionResultCallback: (Boolean) -> Unit,
-        onDeniedButtonOfExplanationDialog: (() -> Unit)?
+        onDeniedButtonOfExplanationDialog: (() -> Unit)?,
+        showSettingDialog: Boolean
     ) {
         startRequestingPermission(
             permission
@@ -218,27 +229,32 @@ class PermissionManager constructor(
 
             if (!isPermissionRational && !isPermissionsGranted(permission)) {
                 LogE("isPermissionRational:$isPermissionRational")
-                showRationalPermissionDialog(dialogTitleRational,
-                    dialogDescriptionRational,
-                    {
-                        LogE("go to setting")
+                if (showSettingDialog) {
+                    showRationalPermissionDialog(dialogTitleRational,
+                        dialogDescriptionRational,
+                        {
+                            LogE("go to setting")
 
-                        openPermissionSettings({
+                            openPermissionSettings({
 
-                            if (isPermissionsGranted(permission)) {
-                                LogE("$permission is granted")
-                                onRationalPermissionResultCallback.invoke(true)
-                            } else {
-                                LogE("$permission is not granted")
-                                onRationalPermissionResultCallback.invoke(false)
-                            }
+                                if (isPermissionsGranted(permission)) {
+                                    LogE("$permission is granted")
+                                    onRationalPermissionResultCallback.invoke(true)
+                                } else {
+                                    LogE("$permission is not granted")
+                                    onRationalPermissionResultCallback.invoke(false)
+                                }
 
+                            })
+                        },
+                        {
+                            LogE("Cancel rational")
+                            onDeniedButtonOfExplanationDialog?.invoke()
                         })
-                    },
-                    {
-                        LogE("Cancel rational")
-                        onDeniedButtonOfExplanationDialog?.invoke()
-                    })
+                } else {
+//                    LogE("no rational dialog is going to show")
+//                    onDeniedButtonOfExplanationDialog?.invoke()
+                }
             } else {
                 LogE("Normal flow of permissions")
                 onPermissionResult.invoke(isGranted)
