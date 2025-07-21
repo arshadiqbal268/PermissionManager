@@ -85,6 +85,27 @@ class PermissionManager constructor(
         }
     }
 
+    /**
+     * in case of greater than Android R (API level 30) check all file permission and on lower than check simple storage permission
+     * @author Arshad Iqbal
+     */
+    fun isStoragePermissionAllowed(): Boolean {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+
+            return isAllFilesPermissionAllowed()
+
+        } else {
+
+            if (isPermissionsGranted(WRITE_EXTERNAL_STORAGE) ||
+                isPermissionsGranted(READ_EXTERNAL_STORAGE)
+            ) {
+                return true
+            } else
+                return false
+        }
+    }
+
     private fun openPermissionSettings(
         onRationalPermissionCallBack: () -> Unit,
     ) {
@@ -102,7 +123,6 @@ class PermissionManager constructor(
 
 
     /**
-     * This method adds two numbers
      * @param permission the permission that we need to ask runtime
      * @param permissionName name of permission to inject in description on the dialog
      * @param onPermissionResult result of particular permission whether it has been denied or granted already
@@ -120,6 +140,8 @@ class PermissionManager constructor(
 
         dialogPermissionExplanationTitle: String = permissionExplanationTitle,
         dialogPermissionExplanationDescription: String = "$permissionName $permissionExplanation",
+        explanationDialogPositiveButtonBgColor: String = "#003FFB",
+        explanationDialogPositiveButtonTxtColor: String = "#ffffff",
 
         dialogTitleRational: String = permissionExplanationTitle,
         dialogDescriptionRational: String = "$permissionName $permissionExplanationSetting",
@@ -412,12 +434,12 @@ class PermissionManager constructor(
     }
 
     fun changeDialogUIColor(
-        dialogBgColor: String,
-        dialogTitleTextColor: String,
-        dialogDescriptionTextColor: String,
-        dialogButtonBgColor: String,
-        dialogButtonTextColor: String,
-        dialogCancelButtonColor: String,
+        dialogBgColor: String = "#ffffff",
+        dialogTitleTextColor: String = "#000000",
+        dialogDescriptionTextColor: String = "#000000",
+        dialogButtonBgColor: String = "#003FFB",
+        dialogButtonTextColor: String = "#ffffff",
+        dialogCancelButtonColor: String = "#999999",
     ) {
         this.dialogBgColor = dialogBgColor
         this.dialogTitleTextColor = dialogTitleTextColor

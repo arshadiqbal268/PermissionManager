@@ -1,5 +1,6 @@
 package com.example.permission_manager
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.Manifest.permission.READ_CONTACTS
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         permissionManager = PermissionManager(this@MainActivity, object : AllFileResultInterface {
             override fun onPermissionDenied() {
                 LogE("onPermissionDenied kkjkjk")
-                findViewById<TextView>(R.id.requestPermission).visibility= View.GONE
+                findViewById<TextView>(R.id.requestPermission).visibility = View.GONE
             }
         })
 //        permissionManager?.initViewMode(permissionViewModel)
@@ -46,35 +47,37 @@ class MainActivity : AppCompatActivity() {
         )*/
 
         findViewById<TextView>(R.id.requestPermission).setOnClickListener {
+            LogE("asking permission")
             permissionManager?.checkPermissionAndRequestIfNeeded(
-                READ_CONTACTS, "Image",
-                { isPermissionAllowed ->
+                POST_NOTIFICATIONS, "Image",
+                onPermissionResult = { isPermissionAllowed ->
                     LogE("is permission granted:$isPermissionAllowed")
 
-                }, true,
-                { isPermissionAllowed ->
+                }, showExplanationDialog = false,
+                onRationalPermissionResultCallback = { isPermissionAllowed ->
                     // in rational permission case
                     LogE("is permission granted:$isPermissionAllowed")
-                }
+                },
+                showSettingDialog = false
             )
         }
 
 
-       /* findViewById<TextView>(R.id.requestPermission).setOnClickListener {
-            permissionManager?.checkManageAllFilePermissionAndRequestIfNeeded(
-                onPermissionResult = { isPermissionAllowed ->
-                    if (isPermissionAllowed) {
-                        LogE("permission granted:$isPermissionAllowed")
-                    } else {
-                        LogE("permission not granted:$isPermissionAllowed")
-                    }
-                },
-                true,
-                onDeniedButtonOfExplanationDialog = {
-                    LogE("onDeniedButtonOfExplanationDialog")
-                }
-            )
-        }*/
+        /* findViewById<TextView>(R.id.requestPermission).setOnClickListener {
+             permissionManager?.checkManageAllFilePermissionAndRequestIfNeeded(
+                 onPermissionResult = { isPermissionAllowed ->
+                     if (isPermissionAllowed) {
+                         LogE("permission granted:$isPermissionAllowed")
+                     } else {
+                         LogE("permission not granted:$isPermissionAllowed")
+                     }
+                 },
+                 true,
+                 onDeniedButtonOfExplanationDialog = {
+                     LogE("onDeniedButtonOfExplanationDialog")
+                 }
+             )
+         }*/
 
     }
 
