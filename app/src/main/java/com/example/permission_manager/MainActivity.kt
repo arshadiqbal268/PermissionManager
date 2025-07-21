@@ -49,16 +49,17 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.requestPermission).setOnClickListener {
             LogE("asking permission")
             permissionManager?.checkPermissionAndRequestIfNeeded(
-                POST_NOTIFICATIONS, "Image",
+                READ_MEDIA_IMAGES, "Image",
                 onPermissionResult = { isPermissionAllowed ->
                     LogE("is permission granted:$isPermissionAllowed")
 
-                }, showExplanationDialog = false,
+                }, showExplanationDialog = true,
                 onRationalPermissionResultCallback = { isPermissionAllowed ->
                     // in rational permission case
                     LogE("is permission granted:$isPermissionAllowed")
                 },
-                showSettingDialog = false
+                showSettingDialog = false,
+                explanationDialogPositiveButtonBgColor="#ffffff"
             )
         }
 

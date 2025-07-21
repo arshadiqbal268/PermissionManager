@@ -140,6 +140,8 @@ class PermissionManager constructor(
 
         dialogPermissionExplanationTitle: String = permissionExplanationTitle,
         dialogPermissionExplanationDescription: String = "$permissionName $permissionExplanation",
+
+        explanationDialogBgColor: String = "#ffffff",
         explanationDialogPositiveButtonBgColor: String = "#003FFB",
         explanationDialogPositiveButtonTxtColor: String = "#ffffff",
 
@@ -150,6 +152,10 @@ class PermissionManager constructor(
         showSettingDialog: Boolean = true
 
     ) {
+
+        this.dialogBgColor = explanationDialogBgColor
+        this.dialogButtonBgColor = explanationDialogPositiveButtonBgColor
+        this.dialogButtonTextColor = explanationDialogPositiveButtonTxtColor
 
         var mPermission = ""
         if (permission == READ_MEDIA_IMAGES || permission == READ_MEDIA_VIDEO || permission == READ_MEDIA_AUDIO) {
